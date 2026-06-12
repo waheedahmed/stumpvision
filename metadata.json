@@ -1,0 +1,6 @@
+{
+  "name": "StumpVision",
+  "description": "StumpVision uses on-device computer vision simulation and the Camera to analyze cricket bowling deliveries, map landing points, run LBW DRS reviews, visualize snicko-meter spikes, and leverage Gemini API as an AI Bowling Coach.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,42 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Deep background shadow / glow for ball -->
+    <path
+        android:fillColor="#00E5FF"
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="1.5"
+        android:pathData="M 54 28 A 26 26 0 1 1 53.9 28 Z" />
+
+    <!-- Solid Crimson red leather cricket ball -->
+    <path
+        android:fillColor="#D50000"
+        android:pathData="M 54 30 A 24 24 0 1 1 53.9 30 Z" />
+
+    <!-- Central stitched seam curve (White) -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M 34 54 Q 54 34 74 54 Q 54 74 34 54" />
+
+    <path
+        android:strokeColor="#CCCCCC"
+        android:strokeWidth="1.0"
+        android:strokeLineCap="round"
+        android:pathData="M 33 54 Q 54 32 75 54" />
+
+    <path
+        android:strokeColor="#CCCCCC"
+        android:strokeWidth="1.0"
+        android:strokeLineCap="round"
+        android:pathData="M 33 54 Q 54 76 75 54" />
+
+    <!-- High reflection glossy white spot -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 43 38 A 4 4 0 1 1 42.9 38 Z" />
+</vector>
