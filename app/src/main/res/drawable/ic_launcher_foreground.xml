@@ -4,39 +4,51 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     
-    <!-- Deep background shadow / glow for ball -->
+    <!-- Soft translucent cyan glow representing the eye's iris field -->
     <path
-        android:fillColor="#00E5FF"
-        android:strokeColor="#00E5FF"
-        android:strokeWidth="1.5"
-        android:pathData="M 54 28 A 26 26 0 1 1 53.9 28 Z" />
+        android:fillColor="#1F38BDF8"
+        android:pathData="M 54,29 A 25,25 0 1,1 53.9,29 Z" />
 
-    <!-- Solid Crimson red leather cricket ball -->
+    <!-- Sleek metallic eye contour outline -->
     <path
-        android:fillColor="#D50000"
-        android:pathData="M 54 30 A 24 24 0 1 1 53.9 30 Z" />
+        android:strokeColor="#94A3B8"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M 12,54 Q 54,18 96,54 Q 54,90 12,54 Z" />
 
-    <!-- Central stitched seam curve (White) -->
+    <!-- Three bright cyan Cricket Wickets (stumps) inside center -->
     <path
-        android:strokeColor="#FFFFFF"
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M 45,39 L 45,69" />
+
+    <path
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M 54,37 L 54,71" />
+
+    <path
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M 63,39 L 63,69" />
+
+    <!-- Horizontal wood/neon bails resting across top -->
+    <path
+        android:strokeColor="#38BDF8"
         android:strokeWidth="2.5"
         android:strokeLineCap="round"
-        android:pathData="M 34 54 Q 54 34 74 54 Q 54 74 34 54" />
+        android:pathData="M 41,37 L 67,37" />
 
+    <!-- Glowing amber cricket ball impacting/positioning inside the zone -->
     <path
-        android:strokeColor="#CCCCCC"
-        android:strokeWidth="1.0"
-        android:strokeLineCap="round"
-        android:pathData="M 33 54 Q 54 32 75 54" />
+        android:fillColor="#FFB000"
+        android:pathData="M 64,38 A 10,10 0 1,1 63.9,38 Z" />
 
-    <path
-        android:strokeColor="#CCCCCC"
-        android:strokeWidth="1.0"
-        android:strokeLineCap="round"
-        android:pathData="M 33 54 Q 54 76 75 54" />
-
-    <!-- High reflection glossy white spot -->
+    <!-- High reflection gloss white spot representing eye spotlight -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M 43 38 A 4 4 0 1 1 42.9 38 Z" />
+        android:pathData="M 61,42 A 2.5,2.5 0 1,1 60.9,42 Z" />
 </vector>

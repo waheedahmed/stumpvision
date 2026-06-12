@@ -1,5 +1,6 @@
 package com.example.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -35,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -49,6 +52,21 @@ import kotlin.random.Random
 @Composable
 fun StumpVisionApp(viewModel: StumpViewModel) {
     val state by viewModel.uiState.collectAsState()
+
+    // Handle system back button so that it mimics the header back button and does not exit the app unexpectedly
+    if (state.currentScreen != AppScreen.SessionsList) {
+        BackHandler {
+            val backTarget = when (state.currentScreen) {
+                AppScreen.SetupGuide -> AppScreen.SessionsList
+                AppScreen.LiveCapture -> AppScreen.SetupGuide
+                AppScreen.DeliveryDetail -> AppScreen.Dashboard
+                AppScreen.DrsReview -> AppScreen.DeliveryDetail
+                AppScreen.Dashboard -> AppScreen.LiveCapture
+                else -> AppScreen.SessionsList
+            }
+            viewModel.navigateTo(backTarget)
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -117,6 +135,95 @@ fun StumpVisionApp(viewModel: StumpViewModel) {
     }
 }
 
+
+@Composable
+fun StumpEyeLogo(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        
+        // 1. Draw futuristic, sleek eye outline
+        val eyePath = Path().apply {
+            // Upper eyelid curve
+            moveTo(w * 0.05f, h * 0.5f)
+            quadraticTo(w * 0.5f, h * 0.15f, w * 0.95f, h * 0.5f)
+            // Lower eyelid curve
+            quadraticTo(w * 0.5f, h * 0.85f, w * 0.05f, h * 0.5f)
+            close()
+        }
+        
+        // Draw eye border (elegant steel blue/grey metallic frame)
+        drawPath(
+            path = eyePath,
+            color = Color(0xFF64748B),
+            style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+        )
+        
+        // Lens reflection/iris glowing circle inside
+        drawCircle(
+            color = Color(0xFF38BDF8).copy(alpha = 0.25f),
+            radius = w * 0.28f,
+            center = Offset(w * 0.5f, h * 0.5f)
+        )
+        
+        // 2. Draw 3 vertical stumps inside center (pupil representer)
+        val stumpWidth = 2.5f.dp.toPx()
+        val stumpHeight = h * 0.35f
+        val startY = h * 0.5f - stumpHeight * 0.5f
+        val endY = h * 0.5f + stumpHeight * 0.5f
+        
+        // Left stump
+        drawLine(
+            color = Color(0xFF38BDF8),
+            start = Offset(w * 0.41f, startY),
+            end = Offset(w * 0.41f, endY),
+            strokeWidth = stumpWidth,
+            cap = StrokeCap.Round
+        )
+        
+        // Center stump
+        drawLine(
+            color = Color(0xFF38BDF8),
+            start = Offset(w * 0.5f, startY),
+            end = Offset(w * 0.5f, endY),
+            strokeWidth = stumpWidth,
+            cap = StrokeCap.Round
+        )
+        
+        // Right stump
+        drawLine(
+            color = Color(0xFF38BDF8),
+            start = Offset(w * 0.59f, startY),
+            end = Offset(w * 0.59f, endY),
+            strokeWidth = stumpWidth,
+            cap = StrokeCap.Round
+        )
+        
+        // Bails across the top of stumps
+        drawLine(
+            color = Color(0xFF38BDF8),
+            start = Offset(w * 0.38f, startY + 1.dp.toPx()),
+            end = Offset(w * 0.62f, startY + 1.dp.toPx()),
+            strokeWidth = 1.5f.dp.toPx(),
+            cap = StrokeCap.Round
+        )
+        
+        // 3. Draw glowing yellow cricket ball impacting (the eye spotlight)
+        drawCircle(
+            color = Color(0xFFF59E0B),
+            radius = w * 0.09f,
+            center = Offset(w * 0.6f, h * 0.46f)
+        )
+        
+        // Lens flare reflection dot
+        drawCircle(
+            color = Color.White,
+            radius = w * 0.03f,
+            center = Offset(w * 0.58f, h * 0.44f)
+        )
+    }
+}
+
 @Composable
 fun StumpHeader(state: StumpUiState, onNavBack: () -> Unit) {
     Row(
@@ -139,11 +246,8 @@ fun StumpHeader(state: StumpUiState, onNavBack: () -> Unit) {
                 )
             }
         } else {
-            Icon(
-                imageVector = Icons.Default.Cyclone,
-                contentDescription = "Logo",
-                tint = BrightAmber,
-                modifier = Modifier.size(28.dp)
+            StumpEyeLogo(
+                modifier = Modifier.size(32.dp)
             )
         }
 
@@ -273,7 +377,7 @@ fun SessionsListScreen(state: StumpUiState, viewModel: StumpViewModel) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        listOf("Fast Medium", "Off Spinner", "Leg Spinner").forEach { style ->
+                        listOf("Fast", "Off Spinner", "Leg Spinner").forEach { style ->
                             val selected = state.bowlerType == style
                             Button(
                                 onClick = { viewModel.setBowlerType(style) },
@@ -626,6 +730,12 @@ fun LiveCaptureScreen(state: StumpUiState, viewModel: StumpViewModel) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    // Keep dynamic updated states so camera factory/analyzer callback doesn't capture stale snapshots
+    val currentRecordingState by rememberUpdatedState(state.isRecording)
+    val currentAutoDetectEnabled by rememberUpdatedState(state.isAutoDetectEnabled)
+    val currentSimulationActive by rememberUpdatedState(state.isSimulationActive)
+    val currentShowClipDetectedOverlay by rememberUpdatedState(state.showClipDetectedOverlay)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -687,12 +797,55 @@ fun LiveCaptureScreen(state: StumpUiState, viewModel: StumpViewModel) {
                             val preview = CameraPreview.Builder().build().also {
                                 it.setSurfaceProvider(surfaceProvider)
                             }
+                            
+                            // Initialize ImageAnalysis use case to act as consecutive frame motion/light differentiator
+                            var lastAverageLuminance = -1f
+                            var lastDetectionTime = 0L
+                            
+                            val imageAnalysis = ImageAnalysis.Builder()
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build()
+                            
+                            imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(context)) { imageProxy ->
+                                val planes = imageProxy.planes
+                                if (planes.isNotEmpty() && currentRecordingState && currentAutoDetectEnabled) {
+                                    val buffer = planes[0].buffer
+                                    val data = ByteArray(buffer.remaining())
+                                    buffer.get(data)
+                                    
+                                    // Sample central zone pixels for fast computation
+                                    var sum = 0L
+                                    var count = 0
+                                    val step = 16 // Speed optimization
+                                    for (i in data.indices step step) {
+                                        sum += data[i].toInt() and 0xFF
+                                        count++
+                                    }
+                                    val currentAverageLuminance = if (count > 0) sum.toFloat() / count else -1f
+                                    
+                                    val now = System.currentTimeMillis()
+                                    if (lastAverageLuminance >= 0f && now - lastDetectionTime > 5000L && !currentSimulationActive && !currentShowClipDetectedOverlay) {
+                                        val diff = kotlin.math.abs(currentAverageLuminance - lastAverageLuminance)
+                                        // A sudden change in pixel intensity indicates a real ball/subject has entered/passed the calibrated area
+                                        if (diff > 5.0f) {
+                                            lastDetectionTime = now
+                                            viewModel.simulateAutomaticDelivery()
+                                        }
+                                    }
+                                    if (currentAverageLuminance >= 0f) {
+                                        lastAverageLuminance = currentAverageLuminance
+                                    }
+                                }
+                                imageProxy.close()
+                            }
+                            
                             try {
                                 cameraProvider.unbindAll()
                                 cameraProvider.bindToLifecycle(
                                     lifecycleOwner,
                                     CameraSelector.DEFAULT_BACK_CAMERA,
-                                    preview
+                                    preview,
+                                    imageAnalysis
                                 )
                             } catch (e: Exception) {
                                 // Stub if no camera is available
@@ -766,41 +919,45 @@ fun LiveCaptureScreen(state: StumpUiState, viewModel: StumpViewModel) {
                 if (state.isSimulationActive) {
                     val p = state.simProgress
 
-                    // Calculate path from deep batsman crease to bowler crease
-                    // Let's draw ball starting from top (bowling arm release) traveling downwards
-                    val startX = center - 15.dp.toPx()
-                    val startY = topPitch
+                    // Calculate path from bowler crease (bottom) to batsman stumps (top)
+                    // The ball starts from the bottom (closer, larger) and flies toward the top end stumps (further, smaller)
+                    val startX = center + size.width * 0.12f
+                    val startY = bottomPitch
 
-                    val bouncePointY = bottomPitch - size.height * 0.22f
-                    val bouncePointX = center + 25.dp.toPx()
+                    val bouncePointY = topPitch + (bottomPitch - topPitch) * 0.45f // Good length area
+                    val bouncePointX = center - size.width * 0.04f
 
-                    val targetX = center - 40.dp.toPx()
-                    val targetY = bottomPitch
+                    // Target finishes at the batsman/stumps (base height is topPitch + size.height * 0.06f)
+                    val targetX = center - size.width * 0.01f
+                    val targetY = topPitch + size.height * 0.06f - 16.dp.toPx()
 
                     val currentX: Float
                     val currentY: Float
 
                     if (p < 0.6f) {
-                        // Segment 1: Release to pitch drop
+                        // Segment 1: Bowler release to pitch bounce
                         val subP = p / 0.6f
                         currentY = startY + (bouncePointY - startY) * subP
                         currentX = startX + (bouncePointX - startX) * subP
                     } else {
-                        // Segment 2: Rise off the deck
+                        // Segment 2: Rise from the pitch to the stumps
                         val subP = (p - 0.6f) / 0.4f
                         currentY = bouncePointY + (targetY - bouncePointY) * subP
                         currentX = bouncePointX + (targetX - bouncePointX) * subP
                     }
 
+                    // Perspective scaling: gets smaller as it travels away
+                    val currentRadius = (13.dp.toPx() * (1f - p * 0.65f)).coerceAtLeast(4.dp.toPx())
+
                     // Draw tracking trail
                     drawCircle(
                         color = BrightAmber.copy(alpha = 0.3f),
-                        radius = 20.dp.toPx() * p,
+                        radius = currentRadius * 2.5f,
                         center = Offset(currentX, currentY)
                     )
                     drawCircle(
                         color = LiveRed,
-                        radius = 8.dp.toPx(),
+                        radius = currentRadius,
                         center = Offset(currentX, currentY)
                     )
                 }
@@ -917,6 +1074,65 @@ fun LiveCaptureScreen(state: StumpUiState, viewModel: StumpViewModel) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Stump-Eye Motion Sensor Trigger toggle card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { viewModel.toggleAutoDetect() },
+            colors = CardDefaults.cardColors(containerColor = CardBackground),
+            border = BorderStroke(
+                width = 1.dp,
+                color = if (state.isAutoDetectEnabled) NeonGreen.copy(alpha = 0.4f) else LightSlate.copy(alpha = 0.2f)
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                    Icon(
+                        imageVector = if (state.isAutoDetectEnabled) Icons.Default.Videocam else Icons.Default.VideocamOff,
+                        contentDescription = null,
+                        tint = if (state.isAutoDetectEnabled) NeonGreen else LightSlate,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = "STUMP-EYE SMART SENSOR",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = SmoothWhite,
+                            fontFamily = FontFamily.Monospace
+                        )
+                        Text(
+                            text = if (state.isAutoDetectEnabled) 
+                                "Auto-triggers camera on ball passing wicket" 
+                            else 
+                                "Sensor paused • Manual simulate trigger only",
+                            fontSize = 10.sp,
+                            color = LightSlate
+                        )
+                    }
+                }
+                Switch(
+                    checked = state.isAutoDetectEnabled,
+                    onCheckedChange = { viewModel.toggleAutoDetect() },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = DeepNavy,
+                        checkedTrackColor = NeonGreen,
+                        uncheckedThumbColor = LightSlate,
+                        uncheckedTrackColor = MutedNavy
+                    )
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         // Trigger simulator button inside HUD
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -950,7 +1166,7 @@ fun LiveCaptureScreen(state: StumpUiState, viewModel: StumpViewModel) {
             ) {
                 Icon(imageVector = Icons.Default.FlashOn, contentDescription = null)
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("BOWL DELIVERY", fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Text("SIMULATE TEST BALL", fontWeight = FontWeight.Black, fontSize = 12.sp)
             }
         }
 

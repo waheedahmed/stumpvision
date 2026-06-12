@@ -27,14 +27,15 @@ data class StumpUiState(
     val selectedDelivery: DeliveryEntity? = null,
     
     // Setup and Settings
-    val bowlerNameInput: String = "Jasprit",
+    val bowlerNameInput: String = "Jimmy",
     val sessionNameInput: String = "Seam Practice",
-    val bowlerType: String = "Fast Medium", // "Spinner", "Fast Medium"
+    val bowlerType: String = "Fast", // "Spinner", "Fast"
     val stumpGridOpacity: Float = 0.6f,
     val calibrationOffset: Float = 0f,
     
     // Live detection overlay simulation states
-    val isRecording: Boolean = false,
+    val isRecording: Boolean = true,
+    val isAutoDetectEnabled: Boolean = true,
     val isSimulationActive: Boolean = false,
     val simProgress: Float = 0f, // 0f to 1f ball animation progress
     val showClipDetectedOverlay: Boolean = false,
@@ -83,7 +84,23 @@ class StumpViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setBowlerType(type: String) {
-        _uiState.update { it.copy(bowlerType = type) }
+        val defaultName = when (type) {
+            "Fast" -> "Seam Practice"
+            "Off Spinner" -> "Off Spin Practice"
+            "Leg Spinner" -> "Leg Spin Practice"
+            else -> "Bowl Practice"
+        }
+        _uiState.update { state ->
+            val curName = state.sessionNameInput
+            val shouldUpdateName = curName == "Seam Practice" || 
+                                   curName == "Off Spin Practice" || 
+                                   curName == "Leg Spin Practice" || 
+                                   curName.isBlank()
+            state.copy(
+                bowlerType = type,
+                sessionNameInput = if (shouldUpdateName) defaultName else curName
+            )
+        }
     }
 
     fun updateGridOpacity(opacity: Float) {
@@ -141,6 +158,11 @@ class StumpViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(isRecording = isNowRecording) }
     }
 
+    fun toggleAutoDetect() {
+        val isNowEnabled = !_uiState.value.isAutoDetectEnabled
+        _uiState.update { it.copy(isAutoDetectEnabled = isNowEnabled) }
+    }
+
     fun simulateAutomaticDelivery() {
         if (_uiState.value.isSimulationActive) return
         val currentSessionId = _uiState.value.currentSession?.id ?: return
@@ -157,7 +179,7 @@ class StumpViewModel(application: Application) : AndroidViewModel(application) {
             }
             
             // Step 2: Pitch Impact visual pop-up, auto-clip detection trigger
-            val speed = if (_uiState.value.bowlerType == "Fast Medium") {
+            val speed = if (_uiState.value.bowlerType == "Fast") {
                 Random.nextDouble(128.0, 148.5).toFloat()
             } else {
                 Random.nextDouble(78.0, 96.0).toFloat()
