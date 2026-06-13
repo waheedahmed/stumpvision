@@ -3,52 +3,176 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    
-    <!-- Soft translucent cyan glow representing the eye's iris field -->
-    <path
-        android:fillColor="#1F38BDF8"
-        android:pathData="M 54,29 A 25,25 0 1,1 53.9,29 Z" />
 
-    <!-- Sleek metallic eye contour outline -->
+    <!-- 1. Deep outer shadow for the entire ball to lift it off the launcher grid -->
     <path
-        android:strokeColor="#94A3B8"
-        android:strokeWidth="3.5"
+        android:fillColor="#22000000"
+        android:pathData="M 54,54 m -46,0 a 46,46 0 1,1 92,0 a 46,46 0 1,1 -92,0" />
+
+    <!-- 2. Pure White structured leather ball base -->
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M 54,54 m -44,0 a 44,44 0 1,1 88,0 a 44,44 0 1,1 -88,0" />
+
+    <!-- 3. Sphere deep shadow gradient approximation overlay (for realistic leather shading) -->
+    <path
+        android:fillColor="#0D334155"
+        android:pathData="M 54,54 m -44,0 a 44,44 0 1,1 88,0 a 44,44 0 1,1 -88,0" />
+
+    <!-- 4. Concentric Dual Circular cricket-seam stitch patterns enclosing the eyeball -->
+    <!-- Red seam separator line -->
+    <path
+        android:strokeColor="#7F1D1D"
+        android:strokeWidth="0.8"
+        android:pathData="M 54,54 m -36.5,0 a 36.5,36.5 0 1,1 73,0 a 36.5,36.5 0 1,1 -73,0" />
+
+    <!-- Outer stitch circle -->
+    <path
+        android:strokeColor="#B91C1C"
+        android:strokeWidth="1.2"
+        android:pathData="M 54,54 m -38,0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0" />
+
+    <!-- Inner stitch circle -->
+    <path
+        android:strokeColor="#B91C1C"
+        android:strokeWidth="1.2"
+        android:pathData="M 54,54 m -35,0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0" />
+
+    <!-- 5. Eyeball Sclera base (White of the eye) inside the cricket ball seam -->
+    <path
+        android:fillColor="#FAF9F6"
+        android:pathData="M 54,54 m -33,0 a 33,33 0 1,1 66,0 a 33,33 0 1,1 -66,0" />
+
+    <!-- Soft sclera shading for a spherical wet/gloss eyeball depth -->
+    <path
+        android:fillColor="#0D091A3A"
+        android:pathData="M 54,54 m -33,0 a 33,33 0 1,1 66,0 a 33,33 0 1,1 -66,0" />
+
+    <!-- 6. Exquisite fine bloodshot ocular veins in the sclera for human-eye realism -->
+    <path
+        android:strokeColor="#EF4444"
+        android:strokeWidth="0.4"
+        android:strokeAlpha="0.3"
         android:strokeLineCap="round"
-        android:pathData="M 12,54 Q 54,18 96,54 Q 54,90 12,54 Z" />
-
-    <!-- Three bright cyan Cricket Wickets (stumps) inside center -->
+        android:pathData="M 23,50 Q 28,51 32,54" />
     <path
-        android:strokeColor="#38BDF8"
-        android:strokeWidth="3"
+        android:strokeColor="#EF4444"
+        android:strokeWidth="0.4"
+        android:strokeAlpha="0.25"
         android:strokeLineCap="round"
-        android:pathData="M 45,39 L 45,69" />
-
+        android:pathData="M 24,57 Q 30,55 33,56 L 35,59" />
     <path
-        android:strokeColor="#38BDF8"
-        android:strokeWidth="3"
+        android:strokeColor="#EF4444"
+        android:strokeWidth="0.4"
+        android:strokeAlpha="0.3"
         android:strokeLineCap="round"
-        android:pathData="M 54,37 L 54,71" />
-
+        android:pathData="M 85,50 Q 80,51 76,52" />
     <path
-        android:strokeColor="#38BDF8"
-        android:strokeWidth="3"
+        android:strokeColor="#EF4444"
+        android:strokeWidth="0.4"
+        android:strokeAlpha="0.25"
         android:strokeLineCap="round"
-        android:pathData="M 63,39 L 63,69" />
-
-    <!-- Horizontal wood/neon bails resting across top -->
+        android:pathData="M 83,56 Q 77,54 74,56" />
     <path
-        android:strokeColor="#38BDF8"
-        android:strokeWidth="2.5"
+        android:strokeColor="#EF4444"
+        android:strokeWidth="0.4"
+        android:strokeAlpha="0.2"
         android:strokeLineCap="round"
-        android:pathData="M 41,37 L 67,37" />
+        android:pathData="M 54,23 Q 53,27 51,32" />
 
-    <!-- Glowing amber cricket ball impacting/positioning inside the zone -->
+    <!-- 7. Vibrant Multi-Tonal Blue Iris -->
+    <!-- Base deep sapphire iris rim -->
     <path
-        android:fillColor="#FFB000"
-        android:pathData="M 64,38 A 10,10 0 1,1 63.9,38 Z" />
+        android:fillColor="#1E3A8A"
+        android:pathData="M 54,54 m -22,0 a 22,22 0 1,1 44,0 a 22,22 0 1,1 -44,0" />
 
-    <!-- High reflection gloss white spot representing eye spotlight -->
+    <!-- Medium bright blue layer -->
+    <path
+        android:fillColor="#2563EB"
+        android:pathData="M 54,54 m -18,0 a 18,18 0 1,1 36,0 a 18,18 0 1,1 -36,0" />
+
+    <!-- Light crystal cyan inner ring -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M 54,54 m -14,0 a 14,14 0 1,1 28,0 a 14,14 0 1,1 -28,0" />
+
+    <!-- Radial iris fiber light highlights -->
+    <path
+        android:strokeColor="#93C5FD"
+        android:strokeWidth="1.2"
+        android:strokeAlpha="0.4"
+        android:pathData="M 54,54 m -16,0 a 16,16 0 1,1 32,0 a 16,16 0 1,1 -32,0" />
+
+    <!-- 8. Pitch black pupil center -->
+    <path
+        android:fillColor="#0B0F19"
+        android:pathData="M 54,54 m -10.5,0 a 10.5,10.5 0 1,1 21,0 a 10.5,10.5 0 1,1 -21,0" />
+
+    <!-- 9. Three Golden Wooden Cricket Wickets (Stumps) slanted perfectly inside the center -->
+    <!-- Left Wicket -->
+    <path
+        android:strokeColor="#B45309"
+        android:strokeWidth="2.0"
+        android:strokeLineCap="round"
+        android:pathData="M 48.5,45 L 45.5,63" />
+    <path
+        android:strokeColor="#FBBF24"
+        android:strokeWidth="0.8"
+        android:strokeLineCap="round"
+        android:pathData="M 48.7,45.3 L 45.7,62.7" />
+
+    <!-- Middle Wicket -->
+    <path
+        android:strokeColor="#B45309"
+        android:strokeWidth="2.0"
+        android:strokeLineCap="round"
+        android:pathData="M 54.0,43 L 51.0,65" />
+    <path
+        android:strokeColor="#FBBF24"
+        android:strokeWidth="0.8"
+        android:strokeLineCap="round"
+        android:pathData="M 54.2,43.3 L 51.2,64.7" />
+
+    <!-- Right Wicket -->
+    <path
+        android:strokeColor="#B45309"
+        android:strokeWidth="2.0"
+        android:strokeLineCap="round"
+        android:pathData="M 59.5,45 L 56.5,63" />
+    <path
+        android:strokeColor="#FBBF24"
+        android:strokeWidth="0.8"
+        android:strokeLineCap="round"
+        android:pathData="M 59.7,45.3 L 56.7,62.7" />
+
+    <!-- 10. Bails resting across the stumps -->
+    <!-- Left Bail -->
+    <path
+        android:strokeColor="#78350F"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round"
+        android:pathData="M 47.0,44.2 L 53.5,42.8" />
+    <!-- Right Bail -->
+    <path
+        android:strokeColor="#78350F"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round"
+        android:pathData="M 54.2,42.8 L 60.5,44.2" />
+
+    <!-- 11. Photorealistic glossy reflections and highlights on lens -->
+    <!-- Big soft white shoulder highlight -->
+    <path
+        android:fillColor="#55FFFFFF"
+        android:pathData="M 38,38 m -6,0 a 6,6 0 1,1 12,0 a 6,6 0 1,1 -12,0" />
+
+    <!-- Pinpoint sharp light speck -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M 61,42 A 2.5,2.5 0 1,1 60.9,42 Z" />
+        android:pathData="M 35,35 m -2.2,0 a 2.2,2.2 0 1,1 4.4,0 a 2.2,2.2 0 1,1 -4.4,0" />
+
+    <!-- Lower corneal wet reflection glow -->
+    <path
+        android:fillColor="#1CFFFFFF"
+        android:pathData="M 70,70 m -5,0 a 5,5 0 1,1 10,0 a 5,5 0 1,1 -10,0" />
+
 </vector>

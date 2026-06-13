@@ -131,6 +131,130 @@ fun StumpVisionApp(viewModel: StumpViewModel) {
                     }
                 }
             }
+            
+            // 1. Exporting Progress Dialog Overlay
+            if (state.isExportingVideo) {
+                AlertDialog(
+                    onDismissRequest = {},
+                    confirmButton = {},
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(
+                                progress = { state.exportProgress },
+                                color = BrightAmber,
+                                strokeWidth = 3.dp,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "SAVING TRACKED VIDEO",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = SmoothWhite,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                    },
+                    text = {
+                        Column {
+                            Text(
+                                "Compiling frame-by-frame 3D Hawkeye trajectory analytics, overlay stats, and saving to gallery...",
+                                color = LightSlate,
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            LinearProgressIndicator(
+                                progress = { state.exportProgress },
+                                color = CricketGreen,
+                                trackColor = Color(0xFF1E293B),
+                                modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp))
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    "Status: ${if (state.exportProgress < 0.85f) "Rendering frames" else "Writing MP4 payload"}",
+                                    fontSize = 10.sp,
+                                    color = LightSlate,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                                Text(
+                                    "${(state.exportProgress * 100).toInt()}%",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BrightAmber
+                                )
+                            }
+                        }
+                    },
+                    containerColor = Color(0xFF0F172A),
+                    properties = androidx.compose.ui.window.DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+                )
+            }
+
+            // 2. Export Success Dialog Modal
+            if (state.lastExportedUriString != null) {
+                AlertDialog(
+                    onDismissRequest = { viewModel.clearExportState() },
+                    confirmButton = {
+                        TextButton(
+                            onClick = { viewModel.clearExportState() }
+                        ) {
+                            Text("DISMISS", color = BrightAmber, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    icon = {
+                        StumpEyeLogo(modifier = Modifier.size(64.dp))
+                    },
+                    title = {
+                        Text(
+                            text = "SAVED TO GALLERY!",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            color = CricketGreen,
+                            fontFamily = FontFamily.Monospace,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    },
+                    text = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Your tracked delivery video has been saved safely directly to your device library (Movies/StumpVision folder)!",
+                                color = SmoothWhite,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFF020617), RoundedCornerShape(6.dp))
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = CricketGreen,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    "Format: MP4 H.264 • Portrait Full HUD",
+                                    color = LightSlate,
+                                    fontSize = 9.sp,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+                        }
+                    },
+                    containerColor = Color(0xFF0F172A)
+                )
+            }
         }
     }
 }
@@ -141,85 +265,249 @@ fun StumpEyeLogo(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
         val w = size.width
         val h = size.height
+        val cx = w / 2f
+        val cy = h / 2f
+        val radius = minOf(w, h) * 0.45f
         
-        // 1. Draw futuristic, sleek eye outline
-        val eyePath = Path().apply {
-            // Upper eyelid curve
-            moveTo(w * 0.05f, h * 0.5f)
-            quadraticTo(w * 0.5f, h * 0.15f, w * 0.95f, h * 0.5f)
-            // Lower eyelid curve
-            quadraticTo(w * 0.5f, h * 0.85f, w * 0.05f, h * 0.5f)
-            close()
-        }
+        // 1. Solid pure white structured leather ball base
+        drawCircle(
+            color = Color(0xFFF8FAFC),
+            radius = radius,
+            center = Offset(cx, cy)
+        )
         
-        // Draw eye border (elegant steel blue/grey metallic frame)
+        // 2. 3D Spherical shadow shading overlay (dark gradient from bottom-right)
+        drawCircle(
+            brush = androidx.compose.ui.graphics.Brush.radialGradient(
+                colors = listOf(Color.Transparent, Color(0x1A334155)),
+                center = Offset(cx - radius * 0.2f, cy - radius * 0.2f),
+                radius = radius * 1.2f
+            ),
+            radius = radius,
+            center = Offset(cx, cy)
+        )
+        
+        // 3. Concentric Dual Circular cricket-seam stitch patterns enclosing the eyeball
+        val redSeamColor = Color(0xFFB91C1C)
+        val deepRedLineColor = Color(0xFF7F1D1D)
+        
+        // Central seam separator line
+        drawCircle(
+            color = deepRedLineColor,
+            radius = radius * 0.825f,
+            center = Offset(cx, cy),
+            style = Stroke(width = 0.8f.dp.toPx())
+        )
+        
+        // Outer stitch circle with dashed line to simulate stitches
+        val outerDashEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
+            floatArrayOf(radius * 0.06f, radius * 0.05f), 0f
+        )
+        drawCircle(
+            color = redSeamColor,
+            radius = radius * 0.86f,
+            center = Offset(cx, cy),
+            style = Stroke(width = 1.2f.dp.toPx(), pathEffect = outerDashEffect)
+        )
+        
+        // Inner stitch circle
+        drawCircle(
+            color = redSeamColor,
+            radius = radius * 0.79f,
+            center = Offset(cx, cy),
+            style = Stroke(width = 1.2f.dp.toPx(), pathEffect = outerDashEffect)
+        )
+        
+        // 4. Eyeball Sclera base (White of the eye) inside the cricket ball seam
+        val scleraRadius = radius * 0.75f
+        drawCircle(
+            color = Color(0xFFFAF9F6),
+            radius = scleraRadius,
+            center = Offset(cx, cy)
+        )
+        
+        // Translucent sclera shading for spherical depth
+        drawCircle(
+            brush = androidx.compose.ui.graphics.Brush.radialGradient(
+                colors = listOf(Color.Transparent, Color(0x1F091A3A)),
+                center = Offset(cx, cy),
+                radius = scleraRadius
+            ),
+            radius = scleraRadius,
+            center = Offset(cx, cy)
+        )
+        
+        // 5. Exquisite bloodshot ocular veins for realistic lens look
+        val veinColor = Color(0xFFEF4444).copy(alpha = 0.3f)
+        val veinStroke = Stroke(width = 0.4f.dp.toPx(), cap = StrokeCap.Round)
+        
+        // Left eye vein path
         drawPath(
-            path = eyePath,
-            color = Color(0xFF64748B),
-            style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+            path = Path().apply {
+                moveTo(cx - scleraRadius + 4.dp.toPx(), cy - radius * 0.1f)
+                quadraticTo(cx - radius * 0.5f, cy - radius * 0.05f, cx - radius * 0.4f, cy + radius * 0.02f)
+            },
+            color = veinColor,
+            style = veinStroke
+        )
+        drawPath(
+            path = Path().apply {
+                moveTo(cx - scleraRadius + 6.dp.toPx(), cy + radius * 0.08f)
+                quadraticTo(cx - radius * 0.48f, cy + radius * 0.02f, cx - radius * 0.41f, cy + radius * 0.05f)
+                lineTo(cx - radius * 0.38f, cy + radius * 0.12f)
+            },
+            color = veinColor,
+            style = veinStroke
         )
         
-        // Lens reflection/iris glowing circle inside
+        // Right eye vein path
+        drawPath(
+            path = Path().apply {
+                moveTo(cx + scleraRadius - 4.dp.toPx(), cy - radius * 0.1f)
+                quadraticTo(cx + radius * 0.5f, cy - radius * 0.05f, cx + radius * 0.4f, cy + radius * 0.02f)
+            },
+            color = veinColor,
+            style = veinStroke
+        )
+        
+        // 6. Vibrant Multi-Tonal Blue Iris
+        // Sapphire Blue (outer iris rim)
+        val irisRadius = radius * 0.5f
         drawCircle(
-            color = Color(0xFF38BDF8).copy(alpha = 0.25f),
-            radius = w * 0.28f,
-            center = Offset(w * 0.5f, h * 0.5f)
+            color = Color(0xFF1E3A8A),
+            radius = irisRadius,
+            center = Offset(cx, cy)
         )
-        
-        // 2. Draw 3 vertical stumps inside center (pupil representer)
-        val stumpWidth = 2.5f.dp.toPx()
-        val stumpHeight = h * 0.35f
-        val startY = h * 0.5f - stumpHeight * 0.5f
-        val endY = h * 0.5f + stumpHeight * 0.5f
-        
-        // Left stump
-        drawLine(
-            color = Color(0xFF38BDF8),
-            start = Offset(w * 0.41f, startY),
-            end = Offset(w * 0.41f, endY),
-            strokeWidth = stumpWidth,
-            cap = StrokeCap.Round
-        )
-        
-        // Center stump
-        drawLine(
-            color = Color(0xFF38BDF8),
-            start = Offset(w * 0.5f, startY),
-            end = Offset(w * 0.5f, endY),
-            strokeWidth = stumpWidth,
-            cap = StrokeCap.Round
-        )
-        
-        // Right stump
-        drawLine(
-            color = Color(0xFF38BDF8),
-            start = Offset(w * 0.59f, startY),
-            end = Offset(w * 0.59f, endY),
-            strokeWidth = stumpWidth,
-            cap = StrokeCap.Round
-        )
-        
-        // Bails across the top of stumps
-        drawLine(
-            color = Color(0xFF38BDF8),
-            start = Offset(w * 0.38f, startY + 1.dp.toPx()),
-            end = Offset(w * 0.62f, startY + 1.dp.toPx()),
-            strokeWidth = 1.5f.dp.toPx(),
-            cap = StrokeCap.Round
-        )
-        
-        // 3. Draw glowing yellow cricket ball impacting (the eye spotlight)
+        // Vibrant Blue (middle tier)
         drawCircle(
-            color = Color(0xFFF59E0B),
-            radius = w * 0.09f,
-            center = Offset(w * 0.6f, h * 0.46f)
+            color = Color(0xFF2563EB),
+            radius = radius * 0.41f,
+            center = Offset(cx, cy)
+        )
+        // Crystal Light Sky Blue (inner glowing tier)
+        drawCircle(
+            color = Color(0xFF38BDF8),
+            radius = radius * 0.32f,
+            center = Offset(cx, cy)
         )
         
-        // Lens flare reflection dot
+        // Radial iris fiber accents circle
+        val irisFibersEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
+            floatArrayOf(radius * 0.02f, radius * 0.03f), 0f
+        )
+        drawCircle(
+            color = Color(0xFF93C5FD).copy(alpha = 0.4f),
+            radius = radius * 0.36f,
+            center = Offset(cx, cy),
+            style = Stroke(width = 1.2f.dp.toPx(), pathEffect = irisFibersEffect)
+        )
+        
+        // 7. Pitch Black pupil center
+        val pupilRadius = radius * 0.24f
+        drawCircle(
+            color = Color(0xFF0B0F19),
+            radius = pupilRadius,
+            center = Offset(cx, cy)
+        )
+        
+        // 8. Three Golden Wooden Wickets (stumps) slanted perfectly inside the center pupil
+        val lStumpTop = Offset(cx - radius * 0.13f, cy - radius * 0.21f)
+        val lStumpBot = Offset(cx - radius * 0.20f, cy + radius * 0.21f)
+        
+        val mStumpTop = Offset(cx, cy - radius * 0.26f)
+        val mStumpBot = Offset(cx - radius * 0.07f, cy + radius * 0.26f)
+        
+        val rStumpTop = Offset(cx + radius * 0.13f, cy - radius * 0.21f)
+        val rStumpBot = Offset(cx + radius * 0.06f, cy + radius * 0.21f)
+        
+        val stumpW = radius * 0.046f
+        val stumpHighlightW = radius * 0.016f
+        
+        // Draw Left Stump
+        drawLine(
+            color = Color(0xFFB45309),
+            start = lStumpBot,
+            end = lStumpTop,
+            strokeWidth = stumpW,
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = Color(0xFFFBBF24),
+            start = Offset(lStumpBot.x + 0.8.dp.toPx(), lStumpBot.y),
+            end = Offset(lStumpTop.x + 0.8.dp.toPx(), lStumpTop.y),
+            strokeWidth = stumpHighlightW,
+            cap = StrokeCap.Round
+        )
+        
+        // Draw Middle Stump
+        drawLine(
+            color = Color(0xFFB45309),
+            start = mStumpBot,
+            end = mStumpTop,
+            strokeWidth = stumpW,
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = Color(0xFFFBBF24),
+            start = Offset(mStumpBot.x + 0.8.dp.toPx(), mStumpBot.y),
+            end = Offset(mStumpTop.x + 0.8.dp.toPx(), mStumpTop.y),
+            strokeWidth = stumpHighlightW,
+            cap = StrokeCap.Round
+        )
+        
+        // Draw Right Stump
+        drawLine(
+            color = Color(0xFFB45309),
+            start = rStumpBot,
+            end = rStumpTop,
+            strokeWidth = stumpW,
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = Color(0xFFFBBF24),
+            start = Offset(rStumpBot.x + 0.8.dp.toPx(), rStumpBot.y),
+            end = Offset(rStumpTop.x + 0.8.dp.toPx(), rStumpTop.y),
+            strokeWidth = stumpHighlightW,
+            cap = StrokeCap.Round
+        )
+        
+        // 9. Bails resting across the stumps
+        val bailW = radius * 0.032f
+        drawLine(
+            color = Color(0xFF78350F),
+            start = Offset(cx - radius * 0.16f, cy - radius * 0.23f),
+            end = Offset(cx - radius * 0.01f, cy - radius * 0.26f),
+            strokeWidth = bailW,
+            cap = StrokeCap.Round
+        )
+        drawLine(
+            color = Color(0xFF78350F),
+            start = Offset(cx + radius * 0.01f, cy - radius * 0.26f),
+            end = Offset(cx + radius * 0.15f, cy - radius * 0.23f),
+            strokeWidth = bailW,
+            cap = StrokeCap.Round
+        )
+        
+        // 10. Photorealistic glossy reflections and highlights over eyeball/lens
+        // Big soft white shoulder highlight
+        drawCircle(
+            color = Color.White.copy(alpha = 0.35f),
+            radius = radius * 0.14f,
+            center = Offset(cx - radius * 0.36f, cy - radius * 0.36f)
+        )
+        
+        // Specular sharp highlight pinpoint
         drawCircle(
             color = Color.White,
-            radius = w * 0.03f,
-            center = Offset(w * 0.58f, h * 0.44f)
+            radius = radius * 0.05f,
+            center = Offset(cx - radius * 0.42f, cy - radius * 0.42f)
+        )
+        
+        // Lower wet crescent reflection glow
+        drawCircle(
+            color = Color.White.copy(alpha = 0.12f),
+            radius = radius * 0.11f,
+            center = Offset(cx + radius * 0.36f, cy + radius * 0.35f)
         )
     }
 }
@@ -735,6 +1023,7 @@ fun LiveCaptureScreen(state: StumpUiState, viewModel: StumpViewModel) {
     val currentAutoDetectEnabled by rememberUpdatedState(state.isAutoDetectEnabled)
     val currentSimulationActive by rememberUpdatedState(state.isSimulationActive)
     val currentShowClipDetectedOverlay by rememberUpdatedState(state.showClipDetectedOverlay)
+    val currentCaptureMode by rememberUpdatedState(state.captureMode)
 
     Column(
         modifier = Modifier
@@ -808,7 +1097,7 @@ fun LiveCaptureScreen(state: StumpUiState, viewModel: StumpViewModel) {
                             
                             imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(context)) { imageProxy ->
                                 val planes = imageProxy.planes
-                                if (planes.isNotEmpty() && currentRecordingState && currentAutoDetectEnabled) {
+                                if (planes.isNotEmpty() && currentRecordingState && currentAutoDetectEnabled && currentCaptureMode == "Sensor") {
                                     val buffer = planes[0].buffer
                                     val data = ByteArray(buffer.remaining())
                                     buffer.get(data)
@@ -1015,6 +1304,98 @@ fun LiveCaptureScreen(state: StumpUiState, viewModel: StumpViewModel) {
                     }
                 }
             }
+
+            // AI Trace Pipeline Analysis Stage HUD
+            if (state.isTracingGenerationActive) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.85f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp)
+                    ) {
+                        // Flashing tracking crosshair ring
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.size(80.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                progress = { state.tracingProgress },
+                                color = BorderCyan,
+                                strokeWidth = 1.5.dp,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = null,
+                                tint = BrightAmber,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(20.dp))
+                        
+                        Text(
+                            text = "STUMP-EYE TRACER ENGINE",
+                            color = BorderCyan,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.5.sp
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Text(
+                            text = "${(state.tracingProgress * 100).toInt()}% COMPLETED",
+                            color = SmoothWhite,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black,
+                            fontFamily = FontFamily.Monospace
+                        )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Current stage indicator
+                        Box(
+                            modifier = Modifier
+                                .background(CardBackground, RoundedCornerShape(6.dp))
+                                .border(1.dp, BorderCyan.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(NeonGreen)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = state.tracingProgressText,
+                                    color = SmoothWhite,
+                                    fontSize = 11.sp,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Processing recorded bowler clip frames @60 FPS",
+                            color = LightSlate,
+                            fontSize = 9.sp,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -1074,99 +1455,268 @@ fun LiveCaptureScreen(state: StumpUiState, viewModel: StumpViewModel) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Stump-Eye Motion Sensor Trigger toggle card
-        Card(
+        // Capture Mode Selector (Video Recording vs Auto Sensor)
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { viewModel.toggleAutoDetect() },
-            colors = CardDefaults.cardColors(containerColor = CardBackground),
-            border = BorderStroke(
-                width = 1.dp,
-                color = if (state.isAutoDetectEnabled) NeonGreen.copy(alpha = 0.4f) else LightSlate.copy(alpha = 0.2f)
-            )
+                .background(CardBackground, RoundedCornerShape(8.dp))
+                .border(1.dp, BorderCyan.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+                .padding(4.dp)
         ) {
-            Row(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .weight(1f)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (state.captureMode == "Video") CricketGreen else Color.Transparent)
+                    .clickable { viewModel.setCaptureMode("Video") }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = if (state.isAutoDetectEnabled) Icons.Default.Videocam else Icons.Default.VideocamOff,
+                        imageVector = Icons.Default.Videocam,
                         contentDescription = null,
-                        tint = if (state.isAutoDetectEnabled) NeonGreen else LightSlate,
-                        modifier = Modifier.size(18.dp)
+                        tint = if (state.captureMode == "Video") SmoothWhite else LightSlate,
+                        modifier = Modifier.size(16.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            text = "STUMP-EYE SMART SENSOR",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = SmoothWhite,
-                            fontFamily = FontFamily.Monospace
-                        )
-                        Text(
-                            text = if (state.isAutoDetectEnabled) 
-                                "Auto-triggers camera on ball passing wicket" 
-                            else 
-                                "Sensor paused • Manual simulate trigger only",
-                            fontSize = 10.sp,
-                            color = LightSlate
-                        )
-                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "RECORD & TRACE",
+                        color = if (state.captureMode == "Video") SmoothWhite else LightSlate,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
                 }
-                Switch(
-                    checked = state.isAutoDetectEnabled,
-                    onCheckedChange = { viewModel.toggleAutoDetect() },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = DeepNavy,
-                        checkedTrackColor = NeonGreen,
-                        uncheckedThumbColor = LightSlate,
-                        uncheckedTrackColor = MutedNavy
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (state.captureMode == "Sensor") CricketGreen else Color.Transparent)
+                    .clickable { viewModel.setCaptureMode("Sensor") }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.FlashOn,
+                        contentDescription = null,
+                        tint = if (state.captureMode == "Sensor") SmoothWhite else LightSlate,
+                        modifier = Modifier.size(16.dp)
                     )
-                )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "SMART SENSOR",
+                        color = if (state.captureMode == "Sensor") SmoothWhite else LightSlate,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Trigger simulator button inside HUD
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Button(
-                onClick = { viewModel.toggleCameraRecording() },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (state.isRecording) LiveRed else MutedNavy,
-                    contentColor = SmoothWhite
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.weight(1f)
+        if (state.captureMode == "Video") {
+            // HIGH-FIDELITY BOWLER VIDEO CAPTURE MODE CONTROLS
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                border = BorderStroke(1.dp, BorderCyan.copy(alpha = 0.2f))
             ) {
-                Icon(
-                    imageVector = if (state.isRecording) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = null
+                Column(
+                    modifier = Modifier.padding(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (!state.isRecordingVideo) {
+                        // Not recording state
+                        Text(
+                            text = "READY TO CAPTURE DELIVERIES",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BrightAmber,
+                            fontFamily = FontFamily.Monospace
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Point camera at batsman from behind bowler. Tap record, let the bowler bowl, then tap stop to compute 3D tracking.",
+                            fontSize = 10.sp,
+                            color = LightSlate,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Button(
+                            onClick = { viewModel.startVideoRecording() },
+                            colors = ButtonDefaults.buttonColors(containerColor = LiveRed),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(SmoothWhite)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("START VIDEO RECORDING", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        }
+                    } else {
+                        // Recording state active
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .background(LiveRed.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                .border(1.dp, LiveRed.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(LiveRed)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "RECORDING BOWLER ACTIVE",
+                                color = SmoothWhite,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            val min = state.videoRecordingSeconds / 60
+                            val sec = state.videoRecordingSeconds % 60
+                            Text(
+                                text = String.format("%02d:%02d", min, sec),
+                                color = BrightAmber,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Filming delivery live! Tap stop once the ball passes the target zone to analyze.",
+                            fontSize = 10.sp,
+                            color = LightSlate,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Button(
+                            onClick = { viewModel.stopVideoRecordingAndTrack() },
+                            colors = ButtonDefaults.buttonColors(containerColor = BrightAmber, contentColor = DeepNavy),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .background(DeepNavy)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("STOP & GENERATE TRACKING", fontWeight = FontWeight.Black, fontSize = 13.sp, fontFamily = FontFamily.Monospace)
+                        }
+                    }
+                }
+            }
+        } else {
+            // SENSOR TRIGGER METHOD CODES
+            // Stump-Eye Motion Sensor Trigger toggle card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.toggleAutoDetect() },
+                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (state.isAutoDetectEnabled) NeonGreen.copy(alpha = 0.4f) else LightSlate.copy(alpha = 0.2f)
                 )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(if (state.isRecording) "Pause Feed" else "Resume Feed", fontSize = 12.sp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                        Icon(
+                            imageVector = if (state.isAutoDetectEnabled) Icons.Default.Videocam else Icons.Default.VideocamOff,
+                            contentDescription = null,
+                            tint = if (state.isAutoDetectEnabled) NeonGreen else LightSlate,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = "STUMP-EYE SMART SENSOR",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = SmoothWhite,
+                                fontFamily = FontFamily.Monospace
+                            )
+                            Text(
+                                text = if (state.isAutoDetectEnabled) 
+                                    "Auto-triggers camera on ball passing wicket" 
+                                else 
+                                    "Sensor paused • Manual simulate trigger only",
+                                fontSize = 10.sp,
+                                color = LightSlate
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = state.isAutoDetectEnabled,
+                        onCheckedChange = { viewModel.toggleAutoDetect() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = DeepNavy,
+                            checkedTrackColor = NeonGreen,
+                            uncheckedThumbColor = LightSlate,
+                            uncheckedTrackColor = MutedNavy
+                        )
+                    )
+                }
             }
 
-            Button(
-                onClick = { viewModel.simulateAutomaticDelivery() },
-                enabled = !state.isSimulationActive,
-                colors = ButtonDefaults.buttonColors(containerColor = BrightAmber, contentColor = DeepNavy),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .weight(1.4f)
-                    .testTag("simulate_delivery_button")
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Trigger simulator button inside HUD
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(imageVector = Icons.Default.FlashOn, contentDescription = null)
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("SIMULATE TEST BALL", fontWeight = FontWeight.Black, fontSize = 12.sp)
+                Button(
+                    onClick = { viewModel.toggleCameraRecording() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (state.isRecording) LiveRed else MutedNavy,
+                        contentColor = SmoothWhite
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = if (state.isRecording) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(if (state.isRecording) "Pause Feed" else "Resume Feed", fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = { viewModel.simulateAutomaticDelivery() },
+                    enabled = !state.isSimulationActive,
+                    colors = ButtonDefaults.buttonColors(containerColor = BrightAmber, contentColor = DeepNavy),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .weight(1.4f)
+                        .testTag("simulate_delivery_button")
+                ) {
+                    Icon(imageVector = Icons.Default.FlashOn, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("SIMULATE TEST BALL", fontWeight = FontWeight.Black, fontSize = 12.sp)
+                }
             }
         }
 
@@ -1510,6 +2060,23 @@ fun DeliveryDetailScreen(state: StumpUiState, viewModel: StumpViewModel) {
                         }
                     }
                 }
+            }
+        }
+
+        // EXPORT TO GALLERY ACTION CARD
+        item {
+            OutlinedButton(
+                onClick = { viewModel.exportTrackedDeliveryToGallery(delivery) },
+                border = BorderStroke(1.dp, BorderCyan),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = BorderCyan),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("export_video_gallery_button")
+            ) {
+                Icon(imageVector = Icons.Default.Download, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("EXPORT & SAVE TRACKED MP4 TO GALLERY", fontWeight = FontWeight.Bold)
             }
         }
 

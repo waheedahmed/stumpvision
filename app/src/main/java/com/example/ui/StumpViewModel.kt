@@ -40,6 +40,19 @@ data class StumpUiState(
     val simProgress: Float = 0f, // 0f to 1f ball animation progress
     val showClipDetectedOverlay: Boolean = false,
     val detectedSpeed: Float = 0f,
+
+    // Video Clip Capture and Tracking States
+    val captureMode: String = "Video", // "Video" or "Sensor"
+    val isRecordingVideo: Boolean = false,
+    val videoRecordingSeconds: Int = 0,
+    val isTracingGenerationActive: Boolean = false,
+    val tracingProgressText: String = "",
+    val tracingProgress: Float = 0f,
+    
+    // Video gallery export flow
+    val isExportingVideo: Boolean = false,
+    val exportProgress: Float = 0f,
+    val lastExportedUriString: String? = null,
     
     // AI Coach Insights state
     val coachFeedback: String = "",
@@ -150,6 +163,62 @@ class StumpViewModel(application: Application) : AndroidViewModel(application) {
             _uiState.update { it.copy(currentSession = sessionWithId, deliveries = emptyList()) }
             fetchDeliveries(insertedId)
             navigateTo(AppScreen.SetupGuide)
+        }
+    }
+
+    fun setCaptureMode(mode: String) {
+        _uiState.update { it.copy(captureMode = mode) }
+    }
+
+    fun startVideoRecording() {
+        if (_uiState.value.isRecordingVideo) return
+        _uiState.update { it.copy(isRecordingVideo = true, videoRecordingSeconds = 0) }
+        
+        viewModelScope.launch {
+            while (_uiState.value.isRecordingVideo) {
+                delay(1000)
+                if (_uiState.value.isRecordingVideo) {
+                    _uiState.update { it.copy(videoRecordingSeconds = it.videoRecordingSeconds + 1) }
+                }
+            }
+        }
+    }
+
+    fun stopVideoRecordingAndTrack() {
+        if (!_uiState.value.isRecordingVideo) return
+        _uiState.update { it.copy(isRecordingVideo = false) }
+        
+        // Ensure there is a session
+        val currentSessionId = _uiState.value.currentSession?.id ?: return
+        
+        viewModelScope.launch {
+            _uiState.update { 
+                it.copy(
+                    isTracingGenerationActive = true,
+                    tracingProgress = 0f,
+                    tracingProgressText = "Initializing frame-by-frame parser..."
+                ) 
+            }
+            
+            val stages = listOf(
+                Pair("Isolating wickets & crease lines on field...", 0.15f),
+                Pair("Detecting bowler release point & hand position...", 0.35f),
+                Pair("Mapping 3D ball trajectory trajectory markers...", 0.55f),
+                Pair("Interpolating swing/spin rotation velocity...", 0.70f),
+                Pair("Measuring ball pitch bounce spot coordinates...", 0.85f),
+                Pair("Finalizing tracking dataset. Saving file...", 1.0f)
+            )
+            
+            for (stage in stages) {
+                delay(950)
+                _uiState.update { it.copy(tracingProgressText = stage.first, tracingProgress = stage.second) }
+            }
+            
+            delay(500)
+            _uiState.update { it.copy(isTracingGenerationActive = false) }
+            
+            // Now start the trajectory tracing animation on screen!
+            simulateAutomaticDelivery()
         }
     }
 
@@ -301,6 +370,9 @@ class StumpViewModel(application: Application) : AndroidViewModel(application) {
             
             delay(1500)
             _uiState.update { it.copy(showClipDetectedOverlay = false) }
+            
+            // Auto-export this newly tracked delivery to the public gallery
+            exportTrackedDeliveryToGallery(newDelivery)
         }
     }
 
@@ -333,6 +405,50 @@ class StumpViewModel(application: Application) : AndroidViewModel(application) {
                     isAnalyzing = false
                 ) 
             }
+        }
+    }
+
+    fun exportTrackedDeliveryToGallery(delivery: DeliveryEntity) {
+        if (_uiState.value.isExportingVideo) return
+        _uiState.update { 
+            it.copy(
+                isExportingVideo = true,
+                exportProgress = 0f,
+                lastExportedUriString = null
+            )
+        }
+        
+        viewModelScope.launch {
+            val context = getApplication<Application>().applicationContext
+            val bowlerName = _uiState.value.currentSession?.bowlerName ?: "Jimmy"
+            val bowlerType = _uiState.value.bowlerType
+            
+            val uri = VideoExportHelper.exportDeliveryVideo(
+                context = context,
+                delivery = delivery,
+                bowlerName = bowlerName,
+                bowlerType = bowlerType,
+                onProgress = { progress ->
+                    _uiState.update { it.copy(exportProgress = progress) }
+                }
+            )
+            
+            _uiState.update { 
+                it.copy(
+                    isExportingVideo = false,
+                    lastExportedUriString = uri?.toString()
+                )
+            }
+        }
+    }
+
+    fun clearExportState() {
+        _uiState.update { 
+            it.copy(
+                isExportingVideo = false,
+                exportProgress = 0f,
+                lastExportedUriString = null
+            ) 
         }
     }
 }
